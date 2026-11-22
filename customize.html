@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Customize Duskpane | Peak Collects LLC</title>
+<meta name="description" content="Try Duskpane's colours, fonts and corners before you buy, and download a free settings file.">
+<link rel="stylesheet" href="store.css">
+<link rel="stylesheet" href="customize.css">
+</head>
+<body>
+<header class="top"><span class="mark" aria-hidden="true"></span><span class="brand">Peak Collects LLC</span>
+<a class="navlink" href="index.html">Back to Duskpane</a>
+<button id="mode" type="button" aria-label="Switch light or dark">Light / dark</button></header>
+<main>
+<section class="hero small">
+<h1>Customize</h1>
+<p class="lead">Start from a base look, change any colour, the fonts, the glass chips and the corners, and see it on sample screens. Then download a small settings file and drop it next to the template. It is free, and you do not need to buy anything to try it.</p>
+</section>
+
+<div class="cz">
+<div class="cz-view">
+<div class="cz-bar">
+<div class="switch" role="group" aria-label="Preview width"><button type="button" data-w="phone" aria-pressed="false">Phone</button><button type="button" data-w="desktop" aria-pressed="true">Desktop</button></div>
+<div class="switch" role="group" aria-label="Preview theme"><button type="button" data-m="dark" aria-pressed="true">Dark</button><button type="button" data-m="light" aria-pressed="false">Light</button></div>
+</div>
+<div class="cz-stage"><div class="cz-fit" id="fit"><div id="pv" class="pv" aria-label="Preview of the sample screens (made-up content)"></div></div></div>
+<p class="muted small">Sample screens with made-up content. This is a preview only; the template itself is not on this page.</p>
+</div>
+
+<form class="cz-ctl" id="ctl" onsubmit="return false">
+<h2>1. Pick a base look</h2>
+<div class="looks" id="looks" role="group" aria-label="Base looks"></div>
+
+<h2>2. Colours <span class="muted small" id="editing"></span></h2>
+<p class="muted small">Dark and light each have their own colours. Use the Dark / Light switch above the preview to choose which one you are editing.</p>
+<div class="cols" id="cols"></div>
+
+<h2>3. Fonts</h2>
+<label class="row">Font <select id="font"></select></label>
+<label class="row" id="customRow" hidden>Your font <input id="fontCustom" type="text" placeholder='"Avenir Next", system-ui, sans-serif' autocomplete="off" spellcheck="false"></label>
+
+<label class="row">Chip font <select id="chipFont"></select></label>
+
+<h2>4. Corners</h2>
+<label class="row">Roundness <input id="corners" type="range" min="0" max="40" step="1"><output id="cornersOut"></output></label>
+
+<h2>5. Download</h2>
+<p class="muted small">Put <b>duskpane-settings.js</b> next to <b>index.html</b> in the template you buy (replace the one that is there). The README and developer guide explain it. The file holds only your choices, never template code.</p>
+<p><button class="btn" type="button" id="dl">Download duskpane-settings.js</button> <button class="ghost" type="button" id="reset">Reset to this look</button></p>
+<p class="muted small" id="saved" role="status"></p>
+</form>
+</div>
+</main>
+<footer><p>Duskpane by Peak Collects LLC. Sample content only.</p></footer>
+<script src="customize.js"></script>
+</body>
+</html>
