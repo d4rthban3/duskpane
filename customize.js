@@ -14,41 +14,56 @@ var $=function(id){return document.getElementById(id)};
 var state,look="duskpane",mode="dark",width="desktop",screen="home";
 function clone(o){return JSON.parse(JSON.stringify(o))}
 function load(id){var l=LOOKS.filter(function(x){return x.id===id})[0];look=id;state={corners:l.corners,font:l.font,chipFont:l.chipFont,dark:clone(l.dark),light:clone(l.light)}}
-function hex(h){var m=/^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(h||"").trim());if(!m)return null;var x=m[1];if(x.length===3)x=x.replace(/./g,"$&$&");return "#"+x.toLowerCase()}
+function hex(v){var s=String(v==null?"":v).trim().replace(/^#/,"");if(!/^([0-9a-f]{3}|[0-9a-f]{6})$/i.test(s))return null;if(s.length===3)s=s[0]+s[0]+s[1]+s[1]+s[2]+s[2];return "#"+s.toLowerCase()}
 function rgb(h){return [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)].join(",")}
 function fontCss(f){return FONTS[f]?FONTS[f][1]:String(f).replace(/[{};<>]/g,"")}
 
-/* ---- preview ---- */
-var SVG={sun:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/></svg>',
- moon:'<svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>',
- menu:'<svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>',
- home:'<svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/></svg>',
- list:'<svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>',
- map:'<svg viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>',
- about:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>'};
-var ITEMS=[["Lamp","LMP-01",64,"4.9",66,"",120],["Chair","CHR-02",182,"4.2",71,"Low stock",8],["Notebook","NTB-03",5.4,null,null,"",900],["Planter","PLT-04",41,null,null,"New",35],["Desk","DSK-05",97.5,"4.6",58,"",22],["Bench","BNC-06",233,"4.4",90,"Bundle",15]];
-function p(n){return "$"+(Number.isInteger(n)?n:n.toFixed(2))}
-function rating(i){return i[3]==null?'<div class="rating"><strong>—</strong> no reviews yet</div>':'<div class="rating"><strong class="'+(+i[3]>=4.5?"":"mid")+'">'+i[3]+'</strong> / 5 ('+i[4]+')</div>'}
+/* ---- preview: sample screens, built here from small helpers ---- */
+function ico(inner){return '<svg viewBox="0 0 24 24" aria-hidden="true">'+inner+'</svg>'}
+function sunIcon(){var r="",a,k;for(k=0;k<8;k++){a=k*Math.PI/4;r+='<line x1="'+(12+Math.cos(a)*7.4).toFixed(1)+'" y1="'+(12+Math.sin(a)*7.4).toFixed(1)+'" x2="'+(12+Math.cos(a)*9.6).toFixed(1)+'" y2="'+(12+Math.sin(a)*9.6).toFixed(1)+'"/>'}return ico('<circle r="4" cx="12" cy="12"/>'+r)}
+function sq(x,y){return '<rect rx="2" width="7" height="7" x="'+x+'" y="'+y+'"/>'}
+var ICON={
+ moon:function(){return ico('<path d="M20 14.5 A8 8 0 0 1 9.5 4 A8 8 0 1 0 20 14.5 Z"/>')},
+ sun:sunIcon,
+ menu:function(){return ico('<polyline points="4,6 20,6"/><polyline points="4,12 20,12"/><polyline points="4,18 20,18"/>')},
+ home:function(){return ico(sq(4,4)+sq(13,4)+sq(4,13)+sq(13,13))},
+ list:function(){return ico('<path d="M8 6H20M8 12H20M8 18H20"/><path d="M4 6v.01M4 12v.01M4 18v.01"/>')},
+ map:function(){return ico('<polyline points="4,9 4,4 9,4"/><polyline points="15,4 20,4 20,9"/><polyline points="20,15 20,20 15,20"/><polyline points="9,20 4,20 4,15"/><rect rx="1.5" x="9" y="9" width="6" height="6"/>')},
+ about:function(){return ico('<circle cx="12" cy="12" r="9"/><path d="M12 11V16M12 8v.01"/>')}
+};
+function h(tag,cls,inner,extra){return '<'+tag+(cls?' class="'+cls+'"':'')+(extra||'')+'>'+inner+'</'+tag+'>'}
+var GOODS=[["Lamp","LMP-01",64,"4.9",66,"",120],["Chair","CHR-02",182,"4.2",71,"Low stock",8],["Notebook","NTB-03",5.4,null,null,"",900],["Planter","PLT-04",41,null,null,"New",35],["Desk","DSK-05",97.5,"4.6",58,"",22],["Bench","BNC-06",233,"4.4",90,"Bundle",15]];
+function money(n){return "$"+(n%1===0?n:n.toFixed(2))}
+function score(g){return g[3]==null?h("div","score",h("b","","—")+" no reviews yet"):h("div","score",h("b",+g[3]>=4.5?"":"soft",g[3])+" / 5 ("+g[4]+")")}
+function disc(t){return h("div","disc",t)}
+function panels(list){return h("div","panels",list.map(function(c){return h("div","panel frost",h("h3","",c[0])+h("p","",c[1]))}).join(""))}
 var SCREENS={
- home:function(){return '<span class="pchip">Starter page</span><h1>Welcome</h1><p class="plead">A starter page: product cards, a pill filter, a list and a detail view, in light and dark. Replace this text and the sample data with your own.</p><div class="pills"><span class="pill on">Home</span><span class="pill">Office</span><span class="pill">Outdoor</span></div><div class="field">'+[ITEMS[0],ITEMS[2]].map(function(i){return '<div class="tile glass"><div class="av">'+i[0][0]+'</div><h3>Sample '+i[0]+'</h3><span class="code">'+i[1]+'</span>'+(i[5]?'<span class="ptag">'+i[5]+'</span>':'')+'<div class="meta">PRICE '+p(i[2])+'</div>'+rating(i)+'</div>'}).join("")+'</div>'},
- list:function(){return '<span class="pchip">Table</span><h1>List</h1><p class="plead">A table that collapses neatly on a phone.</p><div class="table glass"><div class="tr head"><span></span><span>Name</span><span>Price</span><span>Rating</span><span>Stock</span></div>'+ITEMS.map(function(i){return '<div class="tr"><div class="av">'+i[0][0]+'</div><span><b>Sample '+i[0]+'</b><br><span class="code">'+i[1]+'</span></span><span class="mono">'+p(i[2])+'</span><span class="mono '+(i[3]&&+i[3]<4.5?"down":"")+'">'+(i[3]||"—")+'</span><span class="mono '+(i[6]<=10?"down":"")+'">'+(i[6]<=10?"Low ("+i[6]+")":i[6])+'</span></div>'}).join("")+'</div>'},
- item:function(){var i=ITEMS[0];return '<span class="back">← Back</span><section class="hero2 glass"><span class="pchip" style="margin:0 0 10px">Detail</span><div class="av">L</div><h1>Sample Lamp</h1><div class="code" style="font-size:20px">LMP-01</div>'+rating(i)+'<div class="stats">'+[["Price","$64"],["Rating","4.9"],["Reviews","66"],["Stock","120"],["Sold","1840"],["Listed","12d ago"]].map(function(s){return '<div class="stat"><span>'+s[0]+'</span><b>'+s[1]+'</b></div>'}).join("")+'</div></section>'},
- map:function(){return '<span class="pchip">Pages</span><h1>Map</h1><p class="plead">Every page at a glance.</p><div class="cards">'+[["Home","Welcome and product cards"],["List","A table of everything"],["Item","One product in detail"],["About","Who you are"]].map(function(c){return '<div class="pcard glass"><h3>'+c[0]+'</h3><p>'+c[1]+'</p></div>'}).join("")+'</div>'},
- about:function(){return '<span class="pchip">Info</span><h1>About</h1><p class="plead">This page is a template. Tell visitors who you are and what this site is for.</p><div class="cards">'+[["Fast","Plain HTML, CSS and a little script. No build step."],["Light and dark","Follows the visitor’s setting; the button in the header switches it."],["Phone first","Layouts fit narrow screens and grow to a wide page."]].map(function(c){return '<div class="pcard glass"><h3>'+c[0]+'</h3><p>'+c[1]+'</p></div>'}).join("")+'</div><span class="btn2">Get started</span>'}
+ home:function(){
+  var cards=[GOODS[0],GOODS[2]].map(function(g){return h("div","tile frost",disc(g[0].charAt(0))+h("h3","","Sample "+g[0])+h("span","sku",g[1])+(g[5]?h("span","label",g[5]):"")+h("div","foot-meta","PRICE "+money(g[2]))+score(g))}).join("");
+  return h("span","gchip","Starter page")+h("h1","","Welcome")+h("p","intro","A starter page: product cards, a pill filter, a list and a detail view, in light and dark. Replace this text and the sample data with your own.")+h("div","choices",h("span","choice sel","Home")+h("span","choice","Office")+h("span","choice","Outdoor"))+h("div","tiles",cards)},
+ list:function(){
+  var head=h("div","line colhead",h("span","gap","")+h("span","who","Name")+h("span","","Price")+h("span","hide","Rating")+h("span","num","Stock"));
+  var rows=GOODS.map(function(g){var low=g[6]<=10,meh=g[3]&&+g[3]<4.5;return h("div","line",disc(g[0].charAt(0))+h("span","who",h("b","","Sample "+g[0])+"<br>"+h("span","sku",g[1]))+h("span","mono",money(g[2]))+h("span","mono hide"+(meh?" warn":""),g[3]||"—")+h("span","mono num"+(low?" warn":""),low?"Low ("+g[6]+")":g[6]))}).join("");
+  return h("span","gchip","Table")+h("h1","","List")+h("p","intro","A table that collapses neatly on a phone.")+h("div","grid-table frost",head+rows)},
+ item:function(){
+  var g=GOODS[0],facts=[["Price","$64"],["Rating","4.9"],["Reviews","66"],["Stock","120"],["Sold","1840"],["Listed","12d ago"]].map(function(f){return h("div","fact",h("small","",f[0])+h("b","",f[1]))}).join("");
+  return h("span","goback","← Back")+h("section","detail frost",h("span","gchip","Detail",' style="margin:0 0 10px"')+disc("L")+h("h1","","Sample Lamp")+h("div","sku",g[1],' style="font-size:20px"')+score(g)+h("div","facts",facts))},
+ map:function(){return h("span","gchip","Pages")+h("h1","","Map")+h("p","intro","Every page at a glance.")+panels([["Home","Welcome and product cards"],["List","A table of everything"],["Item","One product in detail"],["About","Who you are"]])},
+ about:function(){return h("span","gchip","Info")+h("h1","","About")+h("p","intro","This page is a template. Tell visitors who you are and what this site is for.")+panels([["Fast","Plain HTML, CSS and a little script. No build step."],["Light and dark","Follows the visitor’s setting; the button in the header switches it."],["Phone first","Layouts fit narrow screens and grow to a wide page."]])+h("span","cta","Get started")}
 };
 var pv=$("pv");
 function render(){
- var c=state[mode];
- var v={"--ink":c.background,"--text":c.text,"--mute":c.muted,"--acc":c.accent,"--acc2":c.accent2,"--acct":c.accentText,  "--fg-rgb":rgb(c.text),"--glass-rgb":rgb(c.glass),"--acc-rgb":rgb(c.accent),"--glow-rgb":rgb(c.glow),"--glow":c.glow,"--r":state.corners+"px","--font":fontCss(state.font),"--chead-rgb":rgb(c.headingChip),"--cchoice-rgb":rgb(c.choiceChip),"--tag-rgb":rgb(c.tag),"--chip-font":state.chipFont==="same"?fontCss(state.font):fontCss(state.chipFont)};
- for(var k in v)pv.style.setProperty(k,v[k]);
+ var c=state[mode],chipF=state.chipFont==="same"?state.font:state.chipFont;
+ var map={"--ink":c.background,"--text":c.text,"--mute":c.muted,"--acc":c.accent,"--acc2":c.accent2,"--acct":c.accentText,"--glow":c.glow,"--fg-rgb":rgb(c.text),"--glass-rgb":rgb(c.glass),"--acc-rgb":rgb(c.accent),"--glow-rgb":rgb(c.glow),"--chead-rgb":rgb(c.headingChip),"--cchoice-rgb":rgb(c.choiceChip),"--tag-rgb":rgb(c.tag),"--r":state.corners+"px","--font":fontCss(state.font),"--chip-font":fontCss(chipF)};
+ Object.keys(map).forEach(function(k){pv.style.setProperty(k,map[k])});
  pv.className="pv "+mode+(width==="phone"?" narrow":" wide");
- var nav=[["home","Home"],["list","List"],["map","Map"],["about","About"]];
- pv.innerHTML='<div class="bg" aria-hidden="true"><i></i><i></i><i></i></div><div class="app"><header class="ptop glass"><span class="ib">'+(mode==="light"?SVG.moon:SVG.sun)+'</span><span class="pbrand"><b></b>Duskpane</span><span class="ib">'+SVG.menu+'</span></header>'+SCREENS[screen]()+'<p class="foot">Duskpane · sample content only</p></div><nav class="dock glass" aria-label="Preview screens">'+nav.map(function(n){var cur=(screen===n[0]||(screen==="item"&&n[0]==="home"));return '<button type="button" data-s="'+n[0]+'"'+(cur?' aria-current="page"':'')+'>'+SVG[n[0]]+n[1]+'</button>'}).join("")+'</nav>';
- // item screen reachable from a tile
+ var tabs=[["home","Home"],["list","List"],["map","Map"],["about","About"]];
+ var dock=tabs.map(function(t){var here=screen===t[0]||(screen==="item"&&t[0]==="home");return '<button type="button" data-s="'+t[0]+'"'+(here?' class="here" aria-current="page"':'')+'>'+ICON[t[0]]()+t[1]+'</button>'}).join("");
+ pv.innerHTML=h("div","scene",'<i class="ring r1"></i><i class="ring r2"></i><i class="ring r3"></i>',' aria-hidden="true"')+h("div","page",h("header","bar frost",h("span","round",ICON[mode==="light"?"moon":"sun"]())+h("span","logo","<i></i>Duskpane")+h("span","round",ICON.menu()))+SCREENS[screen]()+h("p","small-print","Duskpane · sample content only"))+h("nav","dock frost",dock,' aria-label="Preview screens"');
  fit();
- var t=pv.querySelector(".tile");if(t){t.style.cursor="pointer";t.onclick=function(){screen="item";render()}}
- [].forEach.call(pv.querySelectorAll(".dock button"),function(b){b.onclick=function(){screen=b.dataset.s;render()}});
- var bk=pv.querySelector(".back");if(bk){bk.style.cursor="pointer";bk.onclick=function(){screen="home";render()}}
+ var tile=pv.querySelector(".tile");if(tile)tile.onclick=function(){screen="item";render()};
+ [].forEach.call(pv.querySelectorAll(".dock button"),function(b){b.onclick=function(){screen=b.getAttribute("data-s");render()}});
+ var back=pv.querySelector(".goback");if(back)back.onclick=function(){screen="home";render()};
 }
 
 function fit(){var st=document.querySelector(".cz-stage"),f=$("fit"),W=width==="phone"?390:900,avail=st.clientWidth-26,k=Math.min(1,avail/W);pv.style.transform="scale("+k+")";f.style.width=(W*k)+"px";f.style.height=(pv.offsetHeight*k)+"px"}
