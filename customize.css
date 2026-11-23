@@ -4,8 +4,8 @@
 .navlink{color:var(--muted);text-decoration:none;font-size:15px}
 .small{font-size:14px}
 .cz{display:grid;gap:28px;grid-template-columns:minmax(0,1.7fr) minmax(280px,1fr);align-items:start;margin-top:8px}
-@media (max-width:860px){.cz{grid-template-columns:1fr}}
-.cz-view{position:sticky;top:8px}
+@media (max-width:860px){.cz{grid-template-columns:minmax(0,1fr)}}
+.cz-view{min-width:0;position:sticky;top:8px}
 @media (max-width:860px){.cz-view{position:static}}
 .cz-bar{display:flex;flex-wrap:wrap;gap:8px 20px;margin:0 0 4px}
 .cz-bar .switch{margin:8px 0}
@@ -15,6 +15,7 @@
 .cz-stage .pv{transform-origin:0 0;flex:none}
 .cz-stage.desktop .pv{width:900px;min-height:700px}
 .cz-stage.phone .pv{width:390px}
+.cz-ctl{min-width:0}
 [hidden]{display:none!important}
 .cz-ctl h2{font-size:21px;margin:26px 0 8px}
 .cz-ctl h2:first-child{margin-top:0}
